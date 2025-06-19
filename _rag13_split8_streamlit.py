@@ -9,14 +9,12 @@ from PIL import Image
 from openai import OpenAI
 from sklearn.metrics.pairwise import cosine_similarity
 
-# ✅ OpenAI APIキー
 if "OPENAI_API_KEY" not in st.secrets:
     st.error("OPENAI_API_KEY が設定されていません。")
     st.stop()
 
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-# ✅ 分割された embeddings ファイルをすべて結合
 embeddings = []
 dfs = []
 for part_num in range(1, 9):
@@ -28,7 +26,6 @@ for part_num in range(1, 9):
 embeddings = np.array(embeddings)
 df = pd.concat(dfs, ignore_index=True)
 
-# ✅ 類似問題検索関数
 def find_similar_questions(query_text, top_k=5):
     query_embedding = client.embeddings.create(
         model="text-embedding-3-small",
@@ -40,7 +37,6 @@ def find_similar_questions(query_text, top_k=5):
     top_indices = sim_scores.argsort()[-top_k:][::-1]
     return df.iloc[top_indices]
 
-# ✅ Streamlit UI
 st.title("📷 歯科医師国家試験・画像問題AI解析")
 
 uploaded_file = st.file_uploader("国家試験問題の画像をアップロードしてください", type=["png", "jpg", "jpeg"])
@@ -95,7 +91,7 @@ if uploaded_file:
             messages=[
                 {
                     "role": "system",
-                    "content": "あなたは国家試験問題の教育専門家です。以下の画像から抽出した問題と、それに類似する過去問を参考にして、次の内容を生成してください：\n1. 出題の意図\n2. 正解\n3. 各選択肢の解説\n4. 類題3問（それぞれ正解と解説付きï¼"
+                    "content": """あなたは歯科国家試験の教育専門家である。以下の画像から抽出した問題と、それに類似する過去問を参考にして、以下の情報を出力せよ：\n1. 出題の意図（簡潔かつ論理的に）\n2. 正解（選択肢の記号と理由）\n3. 各選択肢に対する個別の解説（誤答にも根拠を明示せよ）\n4. 類題を3問作成せよ。各問題については以下を含めãこと：\n　- 問題文、選択肢a〜e、正解\n　- 出題の意図\n　- 各選択肢に対する詳細な解説\n文体はすべて「〜である調」で統一すること。"""
                 },
                 {
                     "role": "user",
