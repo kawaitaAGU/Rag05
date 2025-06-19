@@ -46,6 +46,8 @@ st.title("📷 歯科医師国家試験・画像問題AI解析")
 uploaded_file = st.file_uploader("国家試験問題の画像をアップロードしてください", type=["png", "jpg", "jpeg"])
 
 if uploaded_file:
+    st.image(uploaded_file, caption="アップロードされた画像", use_column_width=True)
+
     with st.spinner("画像をGPT-4oで解析中..."):
         image = Image.open(uploaded_file)
         image_bytes = io.BytesIO()
@@ -69,9 +71,20 @@ if uploaded_file:
         )
 
         extracted_question = vision_response.choices[0].message.content.strip()
+        st.markdown("### 🔍 抽出された問題文")
+        st.markdown(f"```
+{extracted_question}
+```")
 
     with st.spinner("類似問題を検索中..."):
         similar_df = find_similar_questions(extracted_question, top_k=5)
+
+    st.markdown("### 🧩 類似問題（過去問より抽出）")
+    for i, (_, row) in enumerate(similar_df.iterrows(), 1):
+        st.markdown(f"**{i}. {row['設問']}**")
+        st.markdown(f"a. {row['選択肢a']}　b. {row['選択肢b']}　c. {row['選択肢c']}　d. {row['選択肢d']}　e. {row['選択肢e']}")
+        st.markdown(f"**正解: {row['正解']}**")
+        st.markdown("---")
 
     with st.spinner("解説と類題を生成中（GPT-4o）..."):
         similar_texts = "\n\n".join(
@@ -96,3 +109,4 @@ if uploaded_file:
 
         st.markdown("## 🧠 GPT-4oによる解析結果")
         st.markdown(final_response.choices[0].message.content.strip())
+
