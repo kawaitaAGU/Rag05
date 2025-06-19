@@ -54,7 +54,7 @@ if uploaded_file:
         base64_image = base64.b64encode(image_bytes.read()).decode()
 
         vision_response = client.chat.completions.create(
-            model="gpt-4o-2024-11-20",
+            model="gpt-4o",
             messages=[
                 {
                     "role": "system",
